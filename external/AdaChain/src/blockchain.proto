@@ -1,0 +1,123 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service PeerComm {
+    rpc append_entries (AppendRequest) returns (AppendResponse) {}
+    rpc send_to_peer (Request) returns (google.protobuf.Empty) {}
+    rpc send_to_peer_stream (stream Request) returns (google.protobuf.Empty) {}
+    rpc prepopulate (TransactionProposal) returns (PrepopulateResponse) {}
+    rpc start_benchmarking (google.protobuf.Empty) returns (google.protobuf.Empty) {}
+    rpc end_benchmarking (google.protobuf.Empty) returns (google.protobuf.Empty) {}
+    rpc new_episode_info (Action) returns (google.protobuf.Empty) {} 
+    rpc timeout (google.protobuf.Empty) returns (google.protobuf.Empty) {}
+    rpc exchange_block_index (PeerExchange) returns (google.protobuf.Empty) {}
+    rpc resume_block_formation (PeerExchange) returns (google.protobuf.Empty) {}
+    rpc reached_new_watermark (PeerExchange) returns (PeerExchange) {}
+}
+
+service AgentComm {
+    rpc reached_watermark_low (WatermarkLow) returns (google.protobuf.Empty) {}
+    rpc send_preprepare (AgentExchange) returns (google.protobuf.Empty) {}
+    rpc send_prepare (AgentExchange) returns (google.protobuf.Empty) {}
+}
+
+message AppendRequest {
+    uint64 leader_commit = 1;
+    repeated bytes log_entries = 2;
+}
+
+message AppendResponse {
+
+}
+
+message PrepopulateResponse {
+    uint64 num_keys = 1;
+}
+
+message ReadItem {
+    bytes read_key = 1;
+    // together represent the read version
+    uint64 block_seq_num = 2;
+    uint64 trans_seq_num = 3;
+}
+
+message WriteItem {
+    bytes write_key = 1;
+    bytes write_value = 2;
+}
+
+message Endorsement {
+    repeated ReadItem read_set = 1;
+    repeated WriteItem write_set = 2;
+    bytes transaction_id = 3; // derived from the client identifier and the nonce used by client
+    uint64 endorser_id = 4;
+    bytes endorser_signature = 5;
+    bool aborted = 6;
+    google.protobuf.Timestamp received_ts = 7;
+    google.protobuf.Timestamp execution_start_ts = 8;
+    google.protobuf.Timestamp execution_end_ts = 9;
+}
+
+message TransactionProposal {
+    enum Type {
+        Get = 0;
+        Put = 1;
+        TransactSavings = 2;
+        DepositChecking = 3;
+        SendPayment = 4;
+        WriteCheck = 5;
+        Amalgamate = 6;
+        Query = 7;
+    }
+    Type type = 1;
+    repeated string keys = 2;
+    repeated bytes values = 3;
+    uint64 execution_delay = 4;
+    google.protobuf.Timestamp received_ts = 5;
+    uint64 id = 6;
+}
+
+message Request {
+    Endorsement endorsement = 1;
+    TransactionProposal proposal = 2;
+}
+
+message Block {
+    repeated Endorsement transactions = 1;
+    uint64 block_id = 2;
+    // hash value of the previous block
+    string prev_block_hash = 3;
+}
+
+message Action {
+    uint64 blocksize = 1;
+    bool early_execution = 2;
+    bool reorder = 3;
+}
+
+message WatermarkLow {
+    double throughput = 1;
+    uint64 block_id_start = 2;
+    uint64 block_id_now = 3;
+}
+
+message AgentExchange {
+    string originator = 1;
+    double write_ratio = 2;
+    double hot_key_ratio = 3;
+    double trans_arrival_rate = 4;
+    double execution_delay = 5;
+    double throughput = 6;
+}
+
+message PeerExchange {
+    uint64 block_index = 1;
+    uint64 raft_index = 2;
+    bool no_progress = 3;
+}
+
+message TaggedEntry {
+    uint64 tag = 1;
+    bytes entry = 2;
+}
