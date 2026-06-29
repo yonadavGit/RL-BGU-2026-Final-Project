@@ -1,0 +1,8 @@
+grpcio
+grpcio-tools
+jupyter
+matplotlib
+numpy
+pandas
+scikit-learn
+tqdm

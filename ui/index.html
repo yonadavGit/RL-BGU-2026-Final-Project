@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AdaChain Step Simulator</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>AdaChain Step Simulator</h1>
+        <p>Walk through the contextual bandit loop used by AdaChain, one episode at a time.</p>
+      </div>
+      <div class="episode-badge">
+        <span>Episode</span>
+        <strong id="episodeNumber">0</strong>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel control-panel">
+        <div class="panel-heading">
+          <h2>Controls</h2>
+          <button id="resetButton" type="button">Reset</button>
+        </div>
+
+        <label class="field">
+          <span>Workload phase</span>
+          <select id="workloadSelect">
+            <option value="0">A: compute-heavy, high contention</option>
+            <option value="1">B: moderate load, high contention</option>
+            <option value="2">C: compute-heavy, low contention</option>
+            <option value="3">D: write-heavy, very high contention</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Node report noise</span>
+          <input id="noiseRange" type="range" min="0" max="45" step="5" value="0">
+          <output id="noiseOutput">0%</output>
+        </label>
+
+        <div class="button-row">
+          <button id="stepButton" type="button">Step</button>
+          <button id="runButton" type="button">Run 10</button>
+        </div>
+
+        <div class="step-list" aria-label="AdaChain loop steps">
+          <div class="step-item active" data-step="0">
+            <span>1</span>
+            <p>Observe workload state</p>
+          </div>
+          <div class="step-item" data-step="1">
+            <span>2</span>
+            <p>Predict each architecture</p>
+          </div>
+          <div class="step-item" data-step="2">
+            <span>3</span>
+            <p>Select architecture</p>
+          </div>
+          <div class="step-item" data-step="3">
+            <span>4</span>
+            <p>Run episode and measure reward</p>
+          </div>
+          <div class="step-item" data-step="4">
+            <span>5</span>
+            <p>Update experience</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel main-panel">
+        <div class="panel-heading">
+          <h2 id="stepTitle">Observe workload state</h2>
+          <span id="modeLabel">Context</span>
+        </div>
+
+        <div id="explanation" class="explanation"></div>
+
+        <div class="graph-shell">
+          <div class="graph-heading">
+            <h3>RL Decision Graph</h3>
+            <span>contextual bandit episode flow</span>
+          </div>
+          <div id="rlGraph" class="rl-graph" aria-label="AdaChain reinforcement learning graph"></div>
+        </div>
+
+        <div class="state-grid">
+          <article class="metric">
+            <span>Write ratio</span>
+            <strong id="writeRatio">0.20</strong>
+          </article>
+          <article class="metric">
+            <span>Hot key ratio</span>
+            <strong id="hotKeyRatio">0.95</strong>
+          </article>
+          <article class="metric">
+            <span>Arrival rate</span>
+            <strong id="arrivalRate">3000</strong>
+          </article>
+          <article class="metric">
+            <span>Execution delay</span>
+            <strong id="executionDelay">5000 us</strong>
+          </article>
+        </div>
+
+        <div class="split">
+          <div>
+            <h3>Candidate Architectures</h3>
+            <div id="actionTable" class="action-table"></div>
+          </div>
+          <div>
+            <h3>Episode Result</h3>
+            <div class="result-box">
+              <div>
+                <span>Selected</span>
+                <strong id="selectedAction">None yet</strong>
+              </div>
+              <div>
+                <span>Measured throughput</span>
+                <strong id="throughput">0 TPS</strong>
+              </div>
+              <div>
+                <span>Regret vs. best</span>
+                <strong id="regret">0 TPS</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel history-panel">
+        <div class="panel-heading">
+          <h2>Learning Trace</h2>
+          <span id="experienceCount">0 samples</span>
+        </div>
+        <div id="chart" class="chart" aria-label="Throughput history"></div>
+        <div id="history" class="history"></div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
